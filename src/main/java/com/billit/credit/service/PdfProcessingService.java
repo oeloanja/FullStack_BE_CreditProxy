@@ -42,7 +42,6 @@ public class PdfProcessingService {
                     .bodyToMono(PdfProcessResponse.class)
                     .block();
 
-            // 결과 저장
             if (response != null && response.isSuccess()) {
                 PdfData pdfData = PdfData.builder()
                         .userBorrowId(request.getUserBorrowId())
