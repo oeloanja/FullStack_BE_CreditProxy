@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum DocumentType {
-    INCOME("소득증명원"),
-    EMPLOYMENT("재직증명서");
-
-    private final String description;
+    INCOME_PROOF,          // 소득증명원
+    EMPLOYMENT_CERTIFICATE // 재직증명서
 }

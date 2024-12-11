@@ -2,7 +2,7 @@ spring:
   application:
     name: python-proxy-service
   datasource:
-    url: jdbc:mysql://localhost:3306/your_database
+    url: jdbc:mysql://my-data:3306/my-data #mydata db에 맞게 이름 수정해야함
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -21,14 +21,12 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka-service:8761/eureka/
     fetch-registry: true
     register-with-eureka: true
 
-python:
-  pdf:
-    service:
-      url: http://python-pdf-service:5000
-  credit:
-    service:
-      url: http://python-credit-service:5001
+services:
+  pdf-extractor:
+    url: http://pdf-service:4000
+#  credit-model:
+#    url: http://credit-service:4040 #신용평가 모델 포트에 맞추기
