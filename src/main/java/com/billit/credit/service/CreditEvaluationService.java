@@ -6,12 +6,13 @@ import com.billit.credit.client.PdfExtractorClient;
 //import com.billit.credit.dto.DocumentData;
 //import com.billit.credit.dto.request.CreditEvaluationRequest;
 //import com.billit.credit.dto.request.CreditModelRequest;
+import com.billit.credit.dto.EmploymentCertificateData;
+import com.billit.credit.dto.IncomeProofData;
 import com.billit.credit.dto.request.DocumentUrlRequest;
 //import com.billit.credit.dto.response.CreditEvaluationResponse;
-import com.billit.credit.dto.response.DocumentExtractResponse;
 //import com.billit.credit.dto.response.MyDataResponse;
+import com.billit.credit.dto.response.DocumentExtractResponse;
 import com.billit.credit.enums.DocumentType;
-import com.billit.credit.enums.LoanPurpose;
 import lombok.RequiredArgsConstructor;
 //import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,13 +30,14 @@ public class CreditEvaluationService {
 
     private final Map<String, CacheData> documentDataCache = new HashMap<>();
 
-    @Scheduled(fixedRate = 1800000) // 30분마다 실행
+    @Scheduled(fixedRate = 1800000)
     public void cleanupCache() {
         long currentTime = System.currentTimeMillis();
         long timeoutMillis = 1800000;
         documentDataCache.entrySet().removeIf(entry ->
                 currentTime - entry.getValue().getTimestamp() > timeoutMillis);
     }
+
 
 //    public MyDataResponse getMyDataByPhoneNumber(String phoneNumber) {
 //        String sql = """
@@ -65,8 +67,8 @@ public class CreditEvaluationService {
 //    }
 
     // 소득증명원에서 뽑아온 값 캐싱
-    public DocumentExtractResponse processIncomeProof(DocumentUrlRequest request) {
-        DocumentExtractResponse response = pdfExtractorClient.extractData(request.getFileUrl(), DocumentType.INCOME_PROOF);
+    public DocumentExtractResponse<IncomeProofData> processIncomeProof(DocumentUrlRequest request) {
+        DocumentExtractResponse<IncomeProofData> response = pdfExtractorClient.extractIncomeProofData(request.getFileUrl());
 
         CacheData cacheData = documentDataCache.getOrDefault(
                 request.getPhoneNumber(),
@@ -79,8 +81,8 @@ public class CreditEvaluationService {
         return response;
     }
 
-    public DocumentExtractResponse processEmploymentCertificate(DocumentUrlRequest request) {
-        DocumentExtractResponse response = pdfExtractorClient.extractData(request.getFileUrl(), DocumentType.EMPLOYMENT_CERTIFICATE);
+    public DocumentExtractResponse<EmploymentCertificateData> processEmploymentCertificate(DocumentUrlRequest request) {
+        DocumentExtractResponse<EmploymentCertificateData> response = pdfExtractorClient.extractEmploymentCertificateData(request.getFileUrl());
 
         CacheData cacheData = documentDataCache.getOrDefault(
                 request.getPhoneNumber(),

@@ -1,8 +1,8 @@
 package com.billit.credit.client;
 
-import com.billit.credit.dto.DocumentData;
+import com.billit.credit.dto.EmploymentCertificateData;
+import com.billit.credit.dto.IncomeProofData;
 import com.billit.credit.dto.response.DocumentExtractResponse;
-import com.billit.credit.dto.response.RawExtractResponse;
 import com.billit.credit.enums.DocumentType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,43 +22,60 @@ public class PdfExtractorClient {
     @Value("${services.pdf-extractor.url}")
     private String pdfExtractorUrl;
 
-    public DocumentExtractResponse extractData(String fileUrl, DocumentType documentType) {
-        log.info("Extracting data from PDF. URL: {}, Type: {}", fileUrl, documentType);
+    public DocumentExtractResponse<IncomeProofData> extractIncomeProofData(String fileUrl) {
+        log.info("Extracting income proof data from PDF. URL: {}", fileUrl);
 
         try {
-            String endpoint = switch (documentType) {
-                case INCOME_PROOF -> "/api/v1/screening/income";
-                case EMPLOYMENT_CERTIFICATE -> "/api/v1/screening/length";
-            };
-
             Map<String, Object> request = new HashMap<>();
             request.put("url", fileUrl);
 
-            // Python 서버로부터 raw 응답 받기
-            RawExtractResponse rawResponse = restTemplate.postForObject(
-                    pdfExtractorUrl + endpoint,
+            // Python 서버에서 직접 income 필드를 포함한 응답을 받음
+            IncomeProofData response = restTemplate.postForObject(
+                    pdfExtractorUrl + "/api/v1/screening/income",
                     request,
-                    RawExtractResponse.class
+                    IncomeProofData.class
             );
 
-            log.info("Received raw response: {}", rawResponse);
+            log.info("Received income proof response: {}", response);
 
-            if (rawResponse == null) {
-                log.error("Failed to extract data from PDF: null response");
-                throw new RuntimeException("Failed to extract data from PDF");
+            if (response == null) {
+                log.error("Failed to extract income proof data: null response");
+                throw new RuntimeException("Failed to extract income proof data");
             }
 
-            // DocumentData로 변환
-            DocumentData documentData = switch (documentType) {
-                case INCOME_PROOF -> new DocumentData(null, rawResponse.getIncome());
-                case EMPLOYMENT_CERTIFICATE -> new DocumentData(rawResponse.getEnp_length(), null);
-            };
-
-            return new DocumentExtractResponse(documentType, documentData);
+            return new DocumentExtractResponse<>(DocumentType.INCOME_PROOF, response);
 
         } catch (Exception e) {
-            log.error("Error while extracting data from PDF", e);
-            throw new RuntimeException("Failed to extract data from PDF", e);
+            log.error("Error while extracting income proof data", e);
+            throw new RuntimeException("Failed to extract income proof data", e);
+        }
+    }
+
+    public DocumentExtractResponse<EmploymentCertificateData> extractEmploymentCertificateData(String fileUrl) {
+        log.info("Extracting employment certificate data from PDF. URL: {}", fileUrl);
+
+        try {
+            Map<String, Object> request = new HashMap<>();
+            request.put("url", fileUrl);
+
+            EmploymentCertificateData response = restTemplate.postForObject(
+                    pdfExtractorUrl + "/api/v1/screening/length",
+                    request,
+                    EmploymentCertificateData.class
+            );
+
+            log.info("Received employment certificate response: {}", response);
+
+            if (response == null) {
+                log.error("Failed to extract employment certificate data: null response");
+                throw new RuntimeException("Failed to extract employment certificate data");
+            }
+
+            return new DocumentExtractResponse<>(DocumentType.EMPLOYMENT_CERTIFICATE, response);
+
+        } catch (Exception e) {
+            log.error("Error while extracting employment certificate data", e);
+            throw new RuntimeException("Failed to extract employment certificate data", e);
         }
     }
 }

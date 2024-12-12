@@ -1,5 +1,7 @@
 package com.billit.credit.controller;
 
+import com.billit.credit.dto.EmploymentCertificateData;
+import com.billit.credit.dto.IncomeProofData;
 import com.billit.credit.dto.request.DocumentUrlRequest;
 import com.billit.credit.dto.response.DocumentExtractResponse;
 import com.billit.credit.service.CreditEvaluationService;
@@ -21,18 +23,18 @@ public class CreditEvaluationController {
 //    }
 
     @PostMapping("/document/income-proof")
-    public ResponseEntity<DocumentExtractResponse> processIncomeProof(@RequestBody DocumentUrlRequest request) {
+    public ResponseEntity<DocumentExtractResponse<IncomeProofData>> processIncomeProof(@RequestBody DocumentUrlRequest request) {
         log.info("소득증명원 요청 URL: {}", request.getFileUrl());
-        DocumentExtractResponse response = creditEvaluationService.processIncomeProof(request);
+        DocumentExtractResponse<IncomeProofData> response = creditEvaluationService.processIncomeProof(request);
         log.info("추출한 연 소득: {}", response.getData().getIncome());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/document/employment-certificate")
-    public ResponseEntity<DocumentExtractResponse> processEmploymentCertificate(@RequestBody DocumentUrlRequest request) {
+    public ResponseEntity<DocumentExtractResponse<EmploymentCertificateData>> processEmploymentCertificate(@RequestBody DocumentUrlRequest request) {
         log.info("재직증명서 요청 URL: {}", request.getFileUrl());
-        DocumentExtractResponse response = creditEvaluationService.processEmploymentCertificate(request);
-        log.info("추출한 근속 기간: {}", response.getData().getEnp_length());
+        DocumentExtractResponse<EmploymentCertificateData> response = creditEvaluationService.processEmploymentCertificate(request);
+        log.info("추출한 근속 기간: {}", response.getData().getEmp_length());
         return ResponseEntity.ok(response);
     }
 

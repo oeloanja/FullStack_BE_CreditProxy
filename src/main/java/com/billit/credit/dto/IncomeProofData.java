@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentData {
-    private Integer enp_length;
+public class IncomeProofData {
     private BigDecimal income;
 }
