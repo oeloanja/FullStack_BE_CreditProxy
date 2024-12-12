@@ -1,20 +1,22 @@
 package com.billit.credit.service;
 
 import com.billit.credit.cache.CacheData;
-//import com.billit.credit.client.CreditModelClient;
+import com.billit.credit.client.CreditModelClient;
 import com.billit.credit.client.PdfExtractorClient;
-//import com.billit.credit.dto.DocumentData;
-//import com.billit.credit.dto.request.CreditEvaluationRequest;
-//import com.billit.credit.dto.request.CreditModelRequest;
+import com.billit.credit.client.UserServiceClient;
 import com.billit.credit.dto.EmploymentCertificateData;
 import com.billit.credit.dto.IncomeProofData;
+import com.billit.credit.dto.request.CreditEvaluationRequest;
+import com.billit.credit.dto.request.CreditModelRequest;
 import com.billit.credit.dto.request.DocumentUrlRequest;
-//import com.billit.credit.dto.response.CreditEvaluationResponse;
-//import com.billit.credit.dto.response.MyDataResponse;
+import com.billit.credit.dto.request.UserCreditUpdateRequest;
+import com.billit.credit.dto.response.CreditEvaluationResponse;
 import com.billit.credit.dto.response.DocumentExtractResponse;
+import com.billit.credit.dto.response.MyDataResponse;
 import com.billit.credit.enums.DocumentType;
+import com.billit.credit.enums.LoanPurpose;
 import lombok.RequiredArgsConstructor;
-//import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +26,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class CreditEvaluationService {
-//    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
     private final PdfExtractorClient pdfExtractorClient;
-//    private final CreditModelClient creditModelClient;
+    private final CreditModelClient creditModelClient;
+    private final UserServiceClient userServiceClient;
 
     private final Map<String, CacheData> documentDataCache = new HashMap<>();
 
@@ -38,35 +41,38 @@ public class CreditEvaluationService {
                 currentTime - entry.getValue().getTimestamp() > timeoutMillis);
     }
 
+    public MyDataResponse getMyDataByPhoneNumber(String phoneNumber) {
+        String sql = """
+            SELECT user_pn, int_rate, installment, issue_d_period, debt, cr_line_period, pub_rec, revol_bal,
+                   revol_util, open_acc, total_acc, mort_acc, collections_12_mths_ex_med, mortgage_debt,
+                   mortgage_repayment, repayment, mortgage_term
+            FROM mydata.user_log
+            WHERE user_pn = ?
+        """;
 
-//    public MyDataResponse getMyDataByPhoneNumber(String phoneNumber) {
-//        String sql = """
-//            SELECT int_rate, installment, issue_d_period, debt, cr_line_period,
-//                   pub_rec, revol_bal, revol_util, total_acc, mort_acc,
-//                   collections_12_mths_ex_med
-//            FROM my_data
-//            WHERE phone_number = ?
-//        """;
-//
-//        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
-//                        new MyDataResponse(
-//                                rs.getBigDecimal("int_rate"),
-//                                rs.getBigDecimal("installment"),
-//                                rs.getString("issue_d_period"),
-//                                rs.getInt("debt"),
-//                                rs.getString("cr_line_period"),
-//                                rs.getInt("pub_rec"),
-//                                rs.getInt("revol_bal"),
-//                                rs.getBigDecimal("revol_util"),
-//                                rs.getInt("total_acc"),
-//                                rs.getInt("mort_acc"),
-//                                rs.getBigDecimal("collections_12_mths_ex_med")
-//                        ),
-//                phoneNumber
-//        );
-//    }
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
+                        new MyDataResponse(
+                                rs.getFloat("int_rate"),
+                                rs.getFloat("installment"),
+                                rs.getInt("issue_d_period"),
+                                rs.getFloat("debt"),
+                                rs.getInt("cr_line_period"),
+                                rs.getFloat("pub_rec"),
+                                rs.getFloat("revol_bal"),
+                                rs.getFloat("revol_util"),
+                                rs.getFloat("open_acc"),
+                                rs.getFloat("total_acc"),
+                                rs.getFloat("mort_acc"),
+                                rs.getFloat("collections_12_mths_ex_med"),
+                                rs.getInt("mortgage_debt"),
+                                rs.getInt("mortgage_repayment"),
+                                rs.getInt("repayment"),
+                                rs.getInt("mortgage_term")
+                        ),
+                phoneNumber
+        );
+    }
 
-    // 소득증명원에서 뽑아온 값 캐싱
     public DocumentExtractResponse<IncomeProofData> processIncomeProof(DocumentUrlRequest request) {
         DocumentExtractResponse<IncomeProofData> response = pdfExtractorClient.extractIncomeProofData(request.getFileUrl());
 
@@ -95,54 +101,62 @@ public class CreditEvaluationService {
         return response;
     }
 
-//    public CreditEvaluationResponse evaluateCredit(CreditEvaluationRequest request) {
-//        // 마이데이터
-////        MyDataResponse myData = getMyDataByPhoneNumber(request.getPhoneNumber());
-//
-//        // pdf 캐싱해둔거
-//        CacheData cacheData = documentDataCache.get(request.getPhoneNumber());
-//        if (cacheData == null) {
-//            throw new RuntimeException("No cached document data found");
-//        }
-//
-//        Map<DocumentType, DocumentExtractResponse> documents = cacheData.getData();
-//        if (!documents.containsKey(DocumentType.INCOME_PROOF)
-//            || !documents.containsKey(DocumentType.EMPLOYMENT_CERTIFICATE)) {
-//            throw new RuntimeException("Required documents (Income Proof and Employment Certificate) must be processed first");
-//        }
-//
-//
-//        DocumentData incomeProofData = documents.get(DocumentType.INCOME_PROOF).getData();
-//        DocumentData employmentData = documents.get(DocumentType.EMPLOYMENT_CERTIFICATE).getData();
-//
-//        // 신용평가 모델 요청 데이터 구성
-//        CreditModelRequest modelRequest = CreditModelRequest.builder()
-//
-//                .intRate(myData.getIntRate())
-//                .installment(myData.getInstallment())
-//                .issueDPeriod(myData.getIssueDPeriod())
-//                .debt(myData.getDebt())
-//                .crLinePeriod(myData.getCrLinePeriod())
-//                .pubRec(myData.getPubRec())
-//                .revolBal(myData.getRevolBal())
-//                .revolUtil(myData.getRevolUtil())
-//                .totalAcc(myData.getTotalAcc())
-//                .mortAcc(myData.getMortAcc())
-//                .collections12MthsExMed(myData.getCollections12MthsExMed())
-//
-//                .continuousYear(employmentData.getContinuousYear())
-//
-//                .income(incomeProofData.getIncome())
-//
-//                .purpose(LoanPurpose.fromString(request.getPurpose()).getCode())
-//                .requestAmount(request.getAmount())
-//                .requestTerm(request.getTerm())
-//                .build();
-//
-//        // 신용평가 모델 호출
-//        CreditEvaluationResponse response = creditModelClient.evaluateCredit(modelRequest);
-//
-//        documentDataCache.remove(request.getPhoneNumber());
-//        return response;
-//    }
+    public CreditEvaluationResponse evaluateCredit(CreditEvaluationRequest request) {
+        // 마이데이터
+        MyDataResponse myData = getMyDataByPhoneNumber(request.getPhoneNumber());
+
+        // pdf 캐싱해둔거
+        CacheData cacheData = documentDataCache.get(request.getPhoneNumber());
+        if (cacheData == null) {
+            throw new RuntimeException("No cached document data found");
+        }
+
+        DocumentExtractResponse<IncomeProofData> incomeProofResponse = cacheData.getIncomeProofData();
+        DocumentExtractResponse<EmploymentCertificateData> employmentResponse = cacheData.getEmploymentCertificateData();
+
+        if (incomeProofResponse == null || employmentResponse == null) {
+            throw new RuntimeException("Required documents (Income Proof and Employment Certificate) must be processed first");
+        }
+
+        // 신용평가 모델 요청 데이터 구성
+        CreditModelRequest modelRequest = CreditModelRequest.builder()
+                .int_rate(myData.getIntRate())
+                .installment(myData.getInstallment())
+                .issue_d_period(myData.getIssueDPeriod())
+                .dti(calculateDti(myData, incomeProofResponse.getData().getIncome()))
+                .cr_line_period(myData.getCrLinePeriod())
+                .open_acc(myData.getOpenAcc())
+                .pub_rec(myData.getPubRec())
+                .revol_bal(myData.getRevolBal())
+                .revol_util(myData.getRevolUtil())
+                .total_acc(myData.getTotalAcc())
+                .mort_acc(myData.getMortAcc())
+                .collections_12_mths_ex_med(myData.getCollections12MthsExMed())
+                .emplength(employmentResponse.getData().getEmp_length())
+                .annual_inc(incomeProofResponse.getData().getIncome())
+                .loan_purpose(LoanPurpose.fromString(request.getPurpose()).getCode())
+                .loan_amnt(request.getAmount())
+                .build();
+
+        // 신용평가 모델 호출
+        CreditEvaluationResponse response = creditModelClient.evaluateCredit(modelRequest);
+        documentDataCache.remove(request.getPhoneNumber());
+
+//        UserCreditUpdateRequest userRequest = new UserCreditUpdateRequest(request.getPhoneNumber(), response.getTarget());
+//        updateUserCredit(userRequest);
+        return response;
+    }
+
+    private float calculateDti(MyDataResponse myDataResponse, float income) {
+        float mortgage_debt = myDataResponse.getMortgageDebt();
+        float mortgage_repayment = myDataResponse.getMortgageRepayment();
+        float installment = myDataResponse.getInstallment();
+        float mortgage_term = myDataResponse.getMortgageTerm();
+
+        return ((mortgage_debt / mortgage_term) + mortgage_repayment + installment) / income * 100;
+    }
+
+    private void updateUserCredit(UserCreditUpdateRequest request) {
+        userServiceClient.updateCredit(request);
+    }
 }

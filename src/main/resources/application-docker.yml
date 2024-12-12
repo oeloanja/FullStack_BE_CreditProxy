@@ -2,7 +2,7 @@ spring:
   application:
     name: credit-proxy-service
   datasource:
-    url: jdbc:mysql://localhost:3311/mydata?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://mysql-mydata:3306/mydata?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -36,4 +36,4 @@ feign:
   client:
     config:
       user-service:
-        url: ${USER_SERVICE_URL:http://localhost:8085}
+        url: ${USER_SERVICE_URL:http://user-service:8085}

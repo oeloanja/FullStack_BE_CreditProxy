@@ -10,15 +10,20 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MyDataResponse {
-    private BigDecimal intRate;
-    private BigDecimal installment;
-    private String issueDPeriod;
-    private Integer debt;
-    private String crLinePeriod;
-    private Integer pubRec;
-    private Integer revolBal;
-    private BigDecimal revolUtil;
-    private Integer totalAcc;
-    private Integer mortAcc;
-    private BigDecimal collections12MthsExMed;
+    private float intRate;
+    private float installment;
+    private int issueDPeriod;
+    private float debt;
+    private int crLinePeriod;
+    private float pubRec;
+    private float revolBal;
+    private float revolUtil;
+    private float openAcc;
+    private float totalAcc;
+    private float mortAcc;
+    private float collections12MthsExMed;
+    private int mortgageDebt;
+    private int mortgageRepayment;
+    private int repayment;
+    private int mortgageTerm;
 }

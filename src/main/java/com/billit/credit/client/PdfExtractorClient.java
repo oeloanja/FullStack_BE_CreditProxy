@@ -19,7 +19,7 @@ import java.util.Map;
 public class PdfExtractorClient {
     private final RestTemplate restTemplate;
 
-    @Value("${services.pdf-extractor.url}")
+    @Value("${python.pdf-service.url}")
     private String pdfExtractorUrl;
 
     public DocumentExtractResponse<IncomeProofData> extractIncomeProofData(String fileUrl) {

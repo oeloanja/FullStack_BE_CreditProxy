@@ -13,6 +13,6 @@ import java.math.BigDecimal;
 public class CreditEvaluationRequest {
     private String phoneNumber;
     private String purpose;
-    private BigDecimal amount;
+    private float amount;
     private Integer term;
 }

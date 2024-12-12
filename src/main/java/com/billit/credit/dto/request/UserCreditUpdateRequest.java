@@ -1,12 +1,14 @@
-package com.billit.credit.dto.response;
+package com.billit.credit.dto.request;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class CreditEvaluationResponse {
+@AllArgsConstructor
+public class UserCreditUpdateRequest {
+    private String phoneNumber;
     private Integer target;
 }

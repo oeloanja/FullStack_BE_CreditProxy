@@ -10,5 +10,5 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IncomeProofData {
-    private BigDecimal income;
+    private float income;
 }

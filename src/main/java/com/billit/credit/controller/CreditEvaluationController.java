@@ -2,8 +2,11 @@ package com.billit.credit.controller;
 
 import com.billit.credit.dto.EmploymentCertificateData;
 import com.billit.credit.dto.IncomeProofData;
+import com.billit.credit.dto.request.CreditEvaluationRequest;
 import com.billit.credit.dto.request.DocumentUrlRequest;
+import com.billit.credit.dto.response.CreditEvaluationResponse;
 import com.billit.credit.dto.response.DocumentExtractResponse;
+import com.billit.credit.dto.response.MyDataResponse;
 import com.billit.credit.service.CreditEvaluationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 public class CreditEvaluationController {
     private final CreditEvaluationService creditEvaluationService;
 
-//    @GetMapping("/mydata")
-//    public ResponseEntity<MyDataResponse> getMyData(@RequestBody String phoneNumber) {
-//        return ResponseEntity.ok(creditEvaluationService.getMyDataByPhoneNumber(phoneNumber));
-//    }
+    @GetMapping("/mydata")
+    public ResponseEntity<MyDataResponse> getMyData(@RequestParam String phoneNumber) {
+        return ResponseEntity.ok(creditEvaluationService.getMyDataByPhoneNumber(phoneNumber));
+    }
 
     @PostMapping("/document/income-proof")
     public ResponseEntity<DocumentExtractResponse<IncomeProofData>> processIncomeProof(@RequestBody DocumentUrlRequest request) {
@@ -38,8 +41,8 @@ public class CreditEvaluationController {
         return ResponseEntity.ok(response);
     }
 
-//    @PostMapping("/evaluate")
-//    public ResponseEntity<CreditEvaluationResponse> evaluateCredit(@RequestBody CreditEvaluationRequest request) {
-//        return ResponseEntity.ok(creditEvaluationService.evaluateCredit(request));
-//    }
+    @PostMapping("/evaluate")
+    public ResponseEntity<CreditEvaluationResponse> evaluateCredit(@RequestBody CreditEvaluationRequest request) {
+        return ResponseEntity.ok(creditEvaluationService.evaluateCredit(request));
+    }
 }
