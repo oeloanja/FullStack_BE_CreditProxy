@@ -1,19 +1,19 @@
 spring:
   application:
-    name: python-proxy-service
-  datasource:
-    url: jdbc:mysql://my-data:3306/my-data #mydata db에 맞게 이름 수정해야함
-    username: root
-    password: 1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
-    show-sql: true
+    name: credit-proxy-service
+#  datasource:
+#    url: jdbc:mysql://my-data:3306/my-data #mydata db에 맞게 이름 수정해야함
+#    username: root
+#    password: 1234
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.MySQLDialect
+#        format_sql: true
+#    show-sql: true
 
 server:
   port: 8090
@@ -25,8 +25,10 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
 
-services:
-  pdf-extractor:
-    url: http://pdf-service:4000
+python:
+  pdf:
+    service:
+      url: http://pdf-service:4000
+
 #  credit-model:
 #    url: http://credit-service:4040 #신용평가 모델 포트에 맞추기

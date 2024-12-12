@@ -1,5 +1,6 @@
 package com.billit.credit.dto.request;
 
+import com.billit.credit.enums.LoanPurpose;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -23,11 +23,11 @@ public class CreditApplication {
 				.build();
 	}
 
-	@Bean
-	public WebClient creditServiceWebClient(@Value("${python.credit.service.url}") String creditServiceUrl) {
-		return WebClient.builder()
-				.baseUrl(creditServiceUrl)
-				.build();
-	}
+//	@Bean
+//	public WebClient creditServiceWebClient(@Value("${python.credit.service.url}") String creditServiceUrl) {
+//		return WebClient.builder()
+//				.baseUrl(creditServiceUrl)
+//				.build();
+//	}
 
 }

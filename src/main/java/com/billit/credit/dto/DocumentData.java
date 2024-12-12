@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class DocumentData {
-    private Integer continuousYear;
-    private Integer income;
+    private Integer enp_length;
+    private BigDecimal income;
 }
