@@ -16,6 +16,7 @@ import com.billit.credit.dto.response.MyDataResponse;
 import com.billit.credit.enums.DocumentType;
 import com.billit.credit.enums.LoanPurpose;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CreditEvaluationService {
@@ -142,8 +144,23 @@ public class CreditEvaluationService {
         CreditEvaluationResponse response = creditModelClient.evaluateCredit(modelRequest);
         documentDataCache.remove(request.getPhoneNumber());
 
-//        UserCreditUpdateRequest userRequest = new UserCreditUpdateRequest(request.getPhoneNumber(), response.getTarget());
-//        updateUserCredit(userRequest);
+        int convertedCreditRating = response.getTarget() + 1;
+
+        log.info("Credit evaluation completed. Original rating: {}, Converted rating: {}",
+                response.getTarget(), convertedCreditRating);
+
+        try {
+            UserCreditUpdateRequest userRequest = new UserCreditUpdateRequest(
+                    request.getPhoneNumber(),
+                    convertedCreditRating
+            );
+            log.info("Sending credit update request to user service: {}", userRequest);
+            updateUserCredit(userRequest);
+            log.info("Successfully updated user credit rating");
+        } catch (Exception e) {
+            log.error("Failed to update user credit rating", e);
+            // 여기서 예외를 다시 던질지 여부는 비즈니스 요구사항에 따라 결정
+        }
         return response;
     }
 
@@ -157,6 +174,13 @@ public class CreditEvaluationService {
     }
 
     private void updateUserCredit(UserCreditUpdateRequest request) {
-        userServiceClient.updateCredit(request);
+        log.info("Attempting to update user credit: {}", request);
+        try {
+            userServiceClient.updateCredit(request);
+            log.info("Successfully updated user credit");
+        } catch (Exception e) {
+            log.error("Failed to update user credit", e);
+            throw e;
+        }
     }
 }

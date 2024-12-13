@@ -37,3 +37,9 @@ feign:
     config:
       user-service:
         url: ${USER_SERVICE_URL:http://user-service:8085}
+
+logging:
+  level:
+    com.billit.credit: DEBUG
+    com.billit.credit.service.CreditEvaluationService: DEBUG
+    com.billit.credit.client.UserServiceClient: DEBUG
