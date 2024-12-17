@@ -160,11 +160,14 @@ public class CreditEvaluationService {
             DocumentExtractResponse<IncomeProofData> incomeProofResponse,
             DocumentExtractResponse<EmploymentCertificateData> employmentResponse) {
 
+        log.info("Building credit model request with input - request: {}, myData: {}, incomeProof: {}, employment: {}",
+                request, myData, incomeProofResponse, employmentResponse);
+
         float annualIncome = incomeProofResponse.getData().getIncome();
         float dti = calculateDti(myData, annualIncome);
 
         try {
-            return CreditModelRequest.builder()
+            CreditModelRequest creditModelRequest = CreditModelRequest.builder()
                     .int_rate(myData.getIntRate())
                     .installment(myData.getInstallment())
                     .issue_d_period(myData.getIssueDPeriod())
@@ -182,7 +185,11 @@ public class CreditEvaluationService {
                     .loan_purpose(LoanPurpose.fromString(request.getPurpose()).getCode())
                     .loan_amnt(request.getAmount())
                     .build();
+
+            log.info("Built credit model request: {}", creditModelRequest);
+            return creditModelRequest;
         } catch (IllegalArgumentException e) {
+            log.error("Failed to build credit model request due to invalid loan purpose: {}", request.getPurpose(), e);
             throw new CreditServiceException(ErrorCode.INVALID_LOAN_PURPOSE);
         }
     }
